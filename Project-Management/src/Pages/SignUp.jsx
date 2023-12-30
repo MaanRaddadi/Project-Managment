@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth, storage, db } from "../Config/firebase";
 import {
-  auth, storage,db
-} from "../Config/firebase";
-import { uploadBytesResumable, getDownloadURL,ref as storageRef} from "firebase/storage"
+  uploadBytesResumable,
+  getDownloadURL,
+  ref as storageRef,
+} from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
 import { ref } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
-
 function SignUp() {
   const [userInput, setUserInput] = useState({});
   const [error, setError] = useState({});
-const [loading , setLoading] = useState(false);
-const navigate = useNavigate()
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const checkUsername = (e) => {
     const usernameRegex = /^[a-zA-Z0-9_-]{3,16}$/;
     if (!usernameRegex.test(e.target.value)) {
@@ -25,7 +26,6 @@ const navigate = useNavigate()
     }
   };
   const checkEmail = (e) => {
-  
     const emailRegex = /^\w+@tuwaiq\.edu\.sa$/;
     if (!emailRegex.test(e.target.value)) {
       setError((prev) => ({
@@ -48,20 +48,16 @@ const navigate = useNavigate()
     setUserInput({ ...userInput, password: e.target.value });
   };
 
-
-
-
   const createUser = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      
       const res = await createUserWithEmailAndPassword(
         auth,
         userInput.email,
         userInput.password
       );
 
-       const date = new Date().getTime();  
+      const date = new Date().getTime();
       const storageRef = ref(storage, `${userInput.username + date}`);
 
       const uploadTask = uploadBytesResumable(storageRef, userInput.file);
@@ -75,16 +71,15 @@ const navigate = useNavigate()
               displayName: userInput.username,
               photoURL: downloadURL,
             });
-            
+
             await setDoc(doc(db, "users", res.user.uid), {
               userId: res.user.uid,
               username: userInput.username,
               email: userInput.email,
               photoURL: downloadURL,
             });
-     navigate("/login")
+            navigate("/login");
           });
-
         }
       );
     } catch (error) {
@@ -145,11 +140,22 @@ const navigate = useNavigate()
               />
               <span className="text-red-500">{error.password}</span>
               <label className="mt-2">صورة العرض</label>
-              <input required style={{ display: "none" }} type="file" id="file" onChange={(e)=>setUserInput((prev)=>({...prev, file: e.target.files[0]}))} />
-          <label htmlFor="file">
-            <img src="https://cdn-icons-png.flaticon.com/512/8191/8191581.png" className="w-10" alt="" />
-            
-          </label>
+              <input
+                required
+                style={{ display: "none" }}
+                type="file"
+                id="file"
+                onChange={(e) =>
+                  setUserInput((prev) => ({ ...prev, file: e.target.files[0] }))
+                }
+              />
+              <label htmlFor="file">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/8191/8191581.png"
+                  className="w-10"
+                  alt=""
+                />
+              </label>
               <label className="label">
                 <p>
                   لديك حساب؟{" "}
